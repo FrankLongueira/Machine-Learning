@@ -1,0 +1,389 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Machine_Learning_Mini_Project_1</title><meta name="generator" content="MATLAB 8.2"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-09-30"><meta name="DC.source" content="Machine_Learning_Mini_Project_1.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% Machine Learning - Mini Project #1</span>
+<span class="comment">% By Frank Longueira &amp; Matthew Smarsch</span>
+
+close <span class="string">all</span>;
+clear <span class="string">all</span>;
+clc;
+
+num = 1e2;                          <span class="comment">% Number of observations</span>
+iter = 1e3;                         <span class="comment">% Number of iterations</span>
+p = 0.45;                           <span class="comment">% Probability of success for each Bernoulli trial (this is what we are trying to estimate for the binmoial case)</span>
+mu = 13;                            <span class="comment">% Mean of Gaussian random variable we are trying to estimate</span>
+var = 2;                            <span class="comment">% Variance of Gaussian random variable we are trying to estimate</span>
+
+binomial_MSE_ML_iter = zeros(iter,num);      <span class="comment">% Allocate memory for MSE for each iteration</span>
+gaussian_MSE_ML_iter = zeros(iter,num);
+binomial_MSE_conj_iter = zeros(iter,num);
+gaussian_MSE_conj_iter = zeros(iter,num+1);
+gaussian_MSE_conj_var_iter = zeros(iter,num);
+<span class="keyword">for</span> j = 1:iter
+
+    a = zeros(1,num+1);                         <span class="comment">% Allocate memory for hyperparameters "a"</span>
+    b = zeros(1,num+1);                         <span class="comment">% Allocate memory for hyperparameter "b"</span>
+    muo = zeros(1,num+1);                       <span class="comment">% Allocate memory for hyperparameter "muo"</span>
+    v = zeros(1,num+1);                         <span class="comment">% Allocate memory for hyperparameter "v"</span>
+    alpha = zeros(1,num+1);                     <span class="comment">% Allocate memory for hyperparameter "alpha"</span>
+    beta = zeros(1,num+1);                      <span class="comment">% Allocate memory for hyperparameter "beta"</span>
+    a(1)= 1;                                    <span class="comment">% Initialize hyperparameter "a"</span>
+    b(1)= 1;                                    <span class="comment">% Initialize hyperparameter "b"</span>
+    muo(1) = 1;                                 <span class="comment">% Initialize hyperparameter "muo"</span>
+    v(1) = 1;                                   <span class="comment">% Initialize hyperparameter "v"</span>
+    alpha(1) = 1;                               <span class="comment">% Initialize hyperparameter "alpha"</span>
+    beta(1) = 1;
+
+
+    binomial_ML_estimate = zeros(1,num);         <span class="comment">% Allocate memory to store estimates</span>
+    gaussian_ML_estimate = zeros(1,num);
+    binomial_conj_estimate = zeros(1,num);
+    var_ML_estimate = zeros(1,num);
+    rv_vector = [binornd(1,p,1,num); normrnd(mu,sqrt(var),1,num)];<span class="comment">% Observations of random variables are obtained</span>
+    var_conj_gauss_est = zeros(1,num);
+
+    <span class="keyword">for</span> i=1:num
+        binomial_ML_estimate(1,i) = sum(rv_vector(1,1:i))/i;     <span class="comment">% ML Estimate for mean by taking sample mean of observations</span>
+        gaussian_ML_estimate(1,i) = sum(rv_vector(2,1:i))/i;     <span class="comment">% ML Estimate for mean by taking sample mean of observations</span>
+        var_ML_estimate(1,i) = sum((rv_vector(2,1:i)-gaussian_ML_estimate(1,i)).^2)/i; <span class="comment">%ML Estimate for variance of gaussian</span>
+        a(i+1) = a(1) + sum(rv_vector(1,1:i));                   <span class="comment">% Update hyperparameter "a"</span>
+        b(i+1) = b(1) + (i-sum(rv_vector(1,1:i)));               <span class="comment">% Update hyperparameter "b"</span>
+        binomial_conj_estimate(i) = (a(i+1))/(a(i+1) + b(i+1));  <span class="comment">% Conjugate prior estimate on p</span>
+
+        muo(i+1) = (v(1)*muo(1)+sum(rv_vector(2,1:i)))/(v(1)+i); <span class="comment">% Update hyperparamter "mu"</span>
+        v(i+1) = v(1)+i;                                         <span class="comment">% Update hyperparameter "v"</span>
+        alpha(i+1) = alpha(1)+(i/2);                             <span class="comment">% Update hyperparameter "alpha"</span>
+        beta(i+1) = beta(1)+(1/2)*(sum(rv_vector(2,1:i)-sum(rv_vector(2,1:i))/i))+(i*v(1))/(v(1)+i)*0.5*(sum(rv_vector(2,1:i))/i - muo(1))^2; <span class="comment">% Update hyperparameter "beta"</span>
+        var_conj_gauss_est(i) = beta(i)/alpha(i);
+
+    <span class="keyword">end</span>
+
+    binomial_MSE_ML_iter(j,:) = (binomial_ML_estimate-p).^2;       <span class="comment">% Create binomial ML MSE  matrix for every iteration</span>
+    gaussian_MSE_ML_iter(j,:) = (gaussian_ML_estimate-mu).^2;      <span class="comment">% Create gaussian ML MSE  matrix for every iteration</span>
+    gaussian_Var_MSE_iter(j,:) = (var_ML_estimate-var).^2;
+    binomial_MSE_conj_iter(j,:) = (binomial_conj_estimate-p).^2;   <span class="comment">% Create binomial conjugate mean squared error  vector for every iteration</span>
+    gaussian_MSE_conj_iter(j,:) = (muo-mu).^2;                     <span class="comment">% Create gaussian conjugate mean squared error  vector for every iteration</span>
+    gaussian_MSE_conj_var_iter(j,:) = (var_conj_gauss_est - var).^2; <span class="comment">% Create gaussian conjugate mean squared error for variance vector for every iteration</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% Plot MSE for each random variable estimation</span>
+
+binomial_ML_MSE = mean(binomial_MSE_ML_iter);
+gaussian_ML_MSE = mean(gaussian_MSE_ML_iter);
+gaussian_ML_Var = mean(gaussian_Var_MSE_iter);
+binomial_Conj_MSE = mean(binomial_MSE_conj_iter);
+gaussian_Conj_MSE = mean(gaussian_MSE_conj_iter);
+gaussian_Conj_Var_MSE = mean(gaussian_MSE_conj_var_iter);
+
+figure
+
+<span class="comment">% Plot sequential posterior distributions on Binomial parameter, p</span>
+<span class="keyword">for</span> i=1:num+1
+    x = 0:0.01:1;
+    y1 = betapdf(x,a(i),b(i));
+    plot(x,y1)
+    title(<span class="string">'Sequential Posterior Distributions on Binomial Paremeter, p'</span>)
+    ylabel(<span class="string">'PDF'</span>);
+    xlabel(<span class="string">'p'</span>);
+    legend([<span class="string">'\alpha = '</span> int2str(a(i)) <span class="string">', \beta = '</span> int2str(b(i))]);
+    ylim([0 50])
+    drawnow;
+<span class="keyword">end</span>
+
+ <span class="comment">% Plot sequential joint posterior distributions on the parameters mu and tau</span>
+ figure
+<span class="keyword">for</span> i=15:num
+    x = 5:0.5:15;
+    tau = 0:0.5:10;
+    [X Tau] = meshgrid(x,tau);
+    x1=(beta(i).^(alpha(i)))*(sqrt(v(i)));
+    x2 = 1/(gamma(alpha(i))*sqrt(2*pi));
+    x3 = (Tau.^(alpha(i)-0.5)).*exp(-beta(i).*Tau);
+    x4 = exp((-v(i).*Tau.*((X-muo(i)).^2))/2);
+
+    x = 5:0.5:15;
+    tau = 0:0.5:10;
+
+    y5 = x1.*x2.*x3.*x4;
+    surf(x,tau,y5)
+    title(<span class="string">'Sequential Posterior Distributions on Gaussian Paremeters, \mu &amp; \tau'</span>)
+    zlabel(<span class="string">'PDF'</span>)
+    ylabel(<span class="string">'\tau'</span>);
+    xlabel(<span class="string">'\mu'</span>);
+    legend([<span class="string">'mu = '</span> int2str(muo(i)) <span class="string">', v = '</span> int2str(v(i)) <span class="string">', alpha = '</span> int2str(alpha(i)) <span class="string">', beta = '</span> int2str(beta(i))]);
+    drawnow;
+<span class="keyword">end</span>
+
+<span class="comment">% Plot MSE graphs for each estimation</span>
+
+figure
+subplot(2,1,1)
+plot(1:num,binomial_ML_MSE, <span class="string">'r'</span>)
+title(<span class="string">'ML Estimation: MSE for Binomial Parameter, p'</span>)
+ylabel(<span class="string">'Mean Squared Error'</span>)
+xlabel(<span class="string">'Number of observations'</span>)
+xlim([1 num])
+
+subplot(2,1,2)
+plot(1:num,binomial_Conj_MSE, <span class="string">'b'</span>)
+title(<span class="string">'Conjugate Prior Estimation: MSE for Binomial Parameter, p'</span>)
+ylabel(<span class="string">'Mean Squared Error'</span>)
+xlabel(<span class="string">'Number of observations'</span>)
+xlim([1 num])
+
+figure
+subplot(2,2,1)
+plot(1:num,gaussian_ML_MSE,<span class="string">'r'</span>)
+title(<span class="string">'ML Estimation: MSE for Gaussian Mean,\mu'</span>)
+ylabel(<span class="string">'Mean Squared Error'</span>)
+xlabel(<span class="string">'Number of observations'</span>)
+xlim([1 num])
+
+subplot(2,2,2)
+plot(1:num,gaussian_ML_Var,<span class="string">'r'</span>)
+title(<span class="string">'ML Estimation: MSE for Gaussian Variance,\sigma^2'</span>)
+ylabel(<span class="string">'Variance Squared Error'</span>)
+xlabel(<span class="string">'Number of observations'</span>)
+xlim([1 num])
+
+subplot(2,2,3)
+plot(1:num+1,gaussian_Conj_MSE,<span class="string">'b'</span>)
+title(<span class="string">'Conjugate Prior Estimation: MSE for Gaussian Mean,\mu'</span>)
+ylabel(<span class="string">'Mean Squared Error'</span>)
+xlabel(<span class="string">'Number of observations'</span>)
+xlim([1 num])
+
+subplot(2,2,4)
+plot(1:num,gaussian_Conj_Var_MSE,<span class="string">'b'</span>)
+title(<span class="string">'Conjugate Prior Estimation: MSE for Gaussian Variance,\sigma^2'</span>)
+ylabel(<span class="string">'Mean Squared Error'</span>)
+xlabel(<span class="string">'Number of observations'</span>)
+xlim([1 num])
+</pre><img vspace="5" hspace="5" src="Machine_Learning_Mini_Project_1_01.png" alt=""> <img vspace="5" hspace="5" src="Machine_Learning_Mini_Project_1_02.png" alt=""> <img vspace="5" hspace="5" src="Machine_Learning_Mini_Project_1_03.png" alt=""> <img vspace="5" hspace="5" src="Machine_Learning_Mini_Project_1_04.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% Machine Learning - Mini Project #1 
+% By Frank Longueira & Matthew Smarsch
+
+close all;
+clear all;
+clc;
+
+num = 1e2;                          % Number of observations
+iter = 1e3;                         % Number of iterations
+p = 0.45;                           % Probability of success for each Bernoulli trial (this is what we are trying to estimate for the binmoial case)
+mu = 13;                            % Mean of Gaussian random variable we are trying to estimate
+var = 2;                            % Variance of Gaussian random variable we are trying to estimate
+
+binomial_MSE_ML_iter = zeros(iter,num);      % Allocate memory for MSE for each iteration
+gaussian_MSE_ML_iter = zeros(iter,num);
+binomial_MSE_conj_iter = zeros(iter,num);
+gaussian_MSE_conj_iter = zeros(iter,num+1);
+gaussian_MSE_conj_var_iter = zeros(iter,num);
+for j = 1:iter
+    
+    a = zeros(1,num+1);                         % Allocate memory for hyperparameters "a"
+    b = zeros(1,num+1);                         % Allocate memory for hyperparameter "b"
+    muo = zeros(1,num+1);                       % Allocate memory for hyperparameter "muo"
+    v = zeros(1,num+1);                         % Allocate memory for hyperparameter "v"
+    alpha = zeros(1,num+1);                     % Allocate memory for hyperparameter "alpha"
+    beta = zeros(1,num+1);                      % Allocate memory for hyperparameter "beta"
+    a(1)= 1;                                    % Initialize hyperparameter "a"
+    b(1)= 1;                                    % Initialize hyperparameter "b"
+    muo(1) = 1;                                 % Initialize hyperparameter "muo"
+    v(1) = 1;                                   % Initialize hyperparameter "v"
+    alpha(1) = 1;                               % Initialize hyperparameter "alpha"
+    beta(1) = 1;
+    
+    
+    binomial_ML_estimate = zeros(1,num);         % Allocate memory to store estimates
+    gaussian_ML_estimate = zeros(1,num);         
+    binomial_conj_estimate = zeros(1,num);       
+    var_ML_estimate = zeros(1,num);              
+    rv_vector = [binornd(1,p,1,num); normrnd(mu,sqrt(var),1,num)];% Observations of random variables are obtained
+    var_conj_gauss_est = zeros(1,num);
+    
+    for i=1:num
+        binomial_ML_estimate(1,i) = sum(rv_vector(1,1:i))/i;     % ML Estimate for mean by taking sample mean of observations
+        gaussian_ML_estimate(1,i) = sum(rv_vector(2,1:i))/i;     % ML Estimate for mean by taking sample mean of observations
+        var_ML_estimate(1,i) = sum((rv_vector(2,1:i)-gaussian_ML_estimate(1,i)).^2)/i; %ML Estimate for variance of gaussian
+        a(i+1) = a(1) + sum(rv_vector(1,1:i));                   % Update hyperparameter "a"
+        b(i+1) = b(1) + (i-sum(rv_vector(1,1:i)));               % Update hyperparameter "b"
+        binomial_conj_estimate(i) = (a(i+1))/(a(i+1) + b(i+1));  % Conjugate prior estimate on p
+        
+        muo(i+1) = (v(1)*muo(1)+sum(rv_vector(2,1:i)))/(v(1)+i); % Update hyperparamter "mu"
+        v(i+1) = v(1)+i;                                         % Update hyperparameter "v"
+        alpha(i+1) = alpha(1)+(i/2);                             % Update hyperparameter "alpha"
+        beta(i+1) = beta(1)+(1/2)*(sum(rv_vector(2,1:i)-sum(rv_vector(2,1:i))/i))+(i*v(1))/(v(1)+i)*0.5*(sum(rv_vector(2,1:i))/i - muo(1))^2; % Update hyperparameter "beta"
+        var_conj_gauss_est(i) = beta(i)/alpha(i);
+        
+    end
+    
+    binomial_MSE_ML_iter(j,:) = (binomial_ML_estimate-p).^2;       % Create binomial ML MSE  matrix for every iteration
+    gaussian_MSE_ML_iter(j,:) = (gaussian_ML_estimate-mu).^2;      % Create gaussian ML MSE  matrix for every iteration
+    gaussian_Var_MSE_iter(j,:) = (var_ML_estimate-var).^2;         
+    binomial_MSE_conj_iter(j,:) = (binomial_conj_estimate-p).^2;   % Create binomial conjugate mean squared error  vector for every iteration
+    gaussian_MSE_conj_iter(j,:) = (muo-mu).^2;                     % Create gaussian conjugate mean squared error  vector for every iteration
+    gaussian_MSE_conj_var_iter(j,:) = (var_conj_gauss_est - var).^2; % Create gaussian conjugate mean squared error for variance vector for every iteration
+    end
+    
+    % Plot MSE for each random variable estimation
+    
+binomial_ML_MSE = mean(binomial_MSE_ML_iter);
+gaussian_ML_MSE = mean(gaussian_MSE_ML_iter);
+gaussian_ML_Var = mean(gaussian_Var_MSE_iter);
+binomial_Conj_MSE = mean(binomial_MSE_conj_iter);
+gaussian_Conj_MSE = mean(gaussian_MSE_conj_iter);
+gaussian_Conj_Var_MSE = mean(gaussian_MSE_conj_var_iter);
+
+figure
+
+% Plot sequential posterior distributions on Binomial parameter, p
+for i=1:num+1
+    x = 0:0.01:1;
+    y1 = betapdf(x,a(i),b(i));
+    plot(x,y1)
+    title('Sequential Posterior Distributions on Binomial Paremeter, p')
+    ylabel('PDF');
+    xlabel('p');
+    legend(['\alpha = ' int2str(a(i)) ', \beta = ' int2str(b(i))]);
+    ylim([0 50])
+    drawnow;
+end
+
+ % Plot sequential joint posterior distributions on the parameters mu and tau
+ figure
+for i=15:num
+    x = 5:0.5:15;
+    tau = 0:0.5:10;
+    [X Tau] = meshgrid(x,tau);
+    x1=(beta(i).^(alpha(i)))*(sqrt(v(i)));
+    x2 = 1/(gamma(alpha(i))*sqrt(2*pi));
+    x3 = (Tau.^(alpha(i)-0.5)).*exp(-beta(i).*Tau);
+    x4 = exp((-v(i).*Tau.*((X-muo(i)).^2))/2);
+    
+    x = 5:0.5:15;
+    tau = 0:0.5:10;
+     
+    y5 = x1.*x2.*x3.*x4;
+    surf(x,tau,y5)
+    title('Sequential Posterior Distributions on Gaussian Paremeters, \mu & \tau')
+    zlabel('PDF')
+    ylabel('\tau');
+    xlabel('\mu');
+    legend(['mu = ' int2str(muo(i)) ', v = ' int2str(v(i)) ', alpha = ' int2str(alpha(i)) ', beta = ' int2str(beta(i))]);
+    drawnow;
+end
+
+% Plot MSE graphs for each estimation
+
+figure
+subplot(2,1,1)
+plot(1:num,binomial_ML_MSE, 'r')
+title('ML Estimation: MSE for Binomial Parameter, p')
+ylabel('Mean Squared Error')
+xlabel('Number of observations')
+xlim([1 num])
+
+subplot(2,1,2)
+plot(1:num,binomial_Conj_MSE, 'b')
+title('Conjugate Prior Estimation: MSE for Binomial Parameter, p')
+ylabel('Mean Squared Error')
+xlabel('Number of observations')
+xlim([1 num])
+
+figure
+subplot(2,2,1)
+plot(1:num,gaussian_ML_MSE,'r')
+title('ML Estimation: MSE for Gaussian Mean,\mu')
+ylabel('Mean Squared Error')
+xlabel('Number of observations')
+xlim([1 num])
+
+subplot(2,2,2)
+plot(1:num,gaussian_ML_Var,'r')
+title('ML Estimation: MSE for Gaussian Variance,\sigma^2')
+ylabel('Variance Squared Error')
+xlabel('Number of observations')
+xlim([1 num])
+
+subplot(2,2,3)
+plot(1:num+1,gaussian_Conj_MSE,'b')
+title('Conjugate Prior Estimation: MSE for Gaussian Mean,\mu')
+ylabel('Mean Squared Error')
+xlabel('Number of observations')
+xlim([1 num])
+
+subplot(2,2,4)
+plot(1:num,gaussian_Conj_Var_MSE,'b')
+title('Conjugate Prior Estimation: MSE for Gaussian Variance,\sigma^2')
+ylabel('Mean Squared Error')
+xlabel('Number of observations')
+xlim([1 num])
+
+
+##### SOURCE END #####
+--></body></html>
