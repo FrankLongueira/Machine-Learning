@@ -1,0 +1,560 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Machine_Learning_Mini_Project_2</title><meta name="generator" content="MATLAB 8.2"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-10-14"><meta name="DC.source" content="Machine_Learning_Mini_Project_2.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% Machine Learning - Mini Project #2</span>
+<span class="comment">% By Matthew Smarsch &amp; Frank Longueira</span>
+
+close <span class="string">all</span>;
+clear <span class="string">all</span>;
+clc;
+format <span class="string">shortEng</span>;
+
+<span class="comment">% Allocating Memory and Fixing Parameters</span>
+
+obs = 20;                       <span class="comment">% Number of observations</span>
+
+ao = -0.3;                      <span class="comment">% Weight ao of the linear function</span>
+a1 = 0.5;                       <span class="comment">% Weight a1 of the linear function</span>
+alpha = 2;                      <span class="comment">% Precision of the weights</span>
+mn_0 = [0 0];                   <span class="comment">% Mean of prior on the weights</span>
+Sn_0 = (alpha)*eye(2);          <span class="comment">% Covariance matrix of prior on the weights</span>
+mn = zeros(obs,2);              <span class="comment">% Allocating memory for mean updating</span>
+Sn1 = cell(obs,1);              <span class="comment">% Allocating memory for covariance matrix updating</span>
+Io = zeros(obs,2);              <span class="comment">% Allocating memory for basis function matrix</span>
+
+mu = 0;                         <span class="comment">% Mean of noise</span>
+sigma = 0.2;                    <span class="comment">% Standard deviation of noise</span>
+var = sigma^2;                  <span class="comment">% Variance of the noise</span>
+beta = 1/var;                   <span class="comment">% Precision of noise</span>
+
+
+<span class="comment">% Generating data points</span>
+xn = -1 + (2).*rand(obs,1);                   <span class="comment">% Generating random input values on the range [-1 1]</span>
+det_func = (ao + a1*xn);                      <span class="comment">% Deterministic function we are trying to estimate, evaluated at the points xn</span>
+targ = det_func + normrnd(mu,sigma,obs,1);    <span class="comment">% Add noise to deterministic function, these are the target values</span>
+
+
+<span class="comment">% Make function for likelihood function per observation</span>
+syms <span class="string">f(x,t,w0,w1)</span>
+f(x,t,w0,w1) =  ((1/(sigma*sqrt(2*pi)))*exp((-(t-(w0+w1*x))^2)/(2*var)));
+
+Like_n = cell(obs,1);                         <span class="comment">% Allocating memory for each likelihood function</span>
+
+
+<span class="comment">% Generating and storing new mean vector, covariance matrix, and likelihood function for the weights, per observation</span>
+<span class="keyword">for</span> i = 1:obs
+    Io(i,:) = [1 xn(i)];
+    Sn1{i} = alpha*eye(2) + beta*Io(1:i,:)'*Io(1:i,:);
+    mn(i,:) = beta*inv(Sn1{i})*Io(1:i,:)'*targ(1:i,1);
+
+    Like_n{i} = f(xn(i),targ(i),w0,w1);
+<span class="keyword">end</span>
+
+<span class="comment">% Create meshgrid for the space of the weights, ao and a1 (w0 and w1)</span>
+range = -1:0.1:1;                               <span class="comment">% Range space for parameters</span>
+[W00 W11] = meshgrid(range,range);
+
+<span class="comment">% Evaluate likelihood function of weight space for observation 1, 2, and 20</span>
+Z_Like_1 = eval(subs(Like_n{1},{w0 w1},{W00, W11}));
+Z_Like_2 = eval(subs(Like_n{2},{w0 w1},{W00, W11}));
+Z_Like_20 = eval(subs(Like_n{obs},{w0 w1},{W00, W11}));
+
+
+<span class="comment">% Create prior distribution of the weights and draw values from it</span>
+Prior = mvnpdf([W00(:) W11(:)],mn_0,Sn_0);
+Draw_prior = mvnrnd(mn_0,Sn_0,6);
+y1 = zeros(6,length(range));
+<span class="keyword">for</span> j = 1:6                                     <span class="comment">% Generate 6 possible estimates on the deterministic function using the prior on the weights</span>
+    y1(j,:)= Draw_prior(j,1)+ Draw_prior(j,2)*range;
+<span class="keyword">end</span>
+
+<span class="comment">% Create posterior distribution of the weights, after 1st observation, and draw values from it</span>
+Posterior_1 = mvnpdf([W00(:) W11(:)],mn(1,:),inv(Sn1{1}));
+Draw_Posterior_1 = mvnrnd(mn(1,:),inv(Sn1{1}),6);
+y2 = zeros(6,length(range));                    <span class="comment">% Generate 6 possible estimates on the deterministic function using the posterior on the weights</span>
+<span class="keyword">for</span> j = 1:6
+    y2(j,:)= Draw_Posterior_1(j,1)+ Draw_Posterior_1(j,2)*range;
+<span class="keyword">end</span>
+
+<span class="comment">% Create posterior distribution of the weights, after 2nd observation, and draw values from it</span>
+Posterior_2 = mvnpdf([W00(:) W11(:)],mn(2,:),inv(Sn1{2}));
+Draw_Posterior_2 = mvnrnd(mn(2,:),inv(Sn1{2}),6);
+y3 = zeros(6,length(range));
+<span class="keyword">for</span> j = 1:6                                     <span class="comment">% Generate 6 possible estimates on the deterministic function using the new posterior on the weights</span>
+    y3(j,:)= Draw_Posterior_2(j,1)+ Draw_Posterior_2(j,2)*range;
+<span class="keyword">end</span>
+
+<span class="comment">% Create posterior distribution of the weights, after 20th observation, and draw values from it</span>
+Posterior_20 = mvnpdf([W00(:) W11(:)],mn(20,:),inv(Sn1{20}));
+Draw_Posterior_20 = mvnrnd(mn(20,:),inv(Sn1{20}),6);
+y4 = zeros(6,length(range));                    <span class="comment">% Generate 6 possible estimates on the deterministic function using the final posterior on the weights</span>
+<span class="keyword">for</span> j = 1:6
+    y4(j,:)= Draw_Posterior_20(j,1)+ Draw_Posterior_20(j,2)*range;
+<span class="keyword">end</span>
+
+<span class="comment">% Generating Predictive Distributions for this regression after 1st, 2nd, and 20th observations</span>
+
+syms <span class="string">x</span>
+
+Io_x = transpose([1 x]);                                        <span class="comment">% Basis function vector</span>
+
+var_pred_1 = (1/beta) + (transpose(Io_x)*inv(Sn1{1})*Io_x);     <span class="comment">% 1st Observation</span>
+mu_pred_1 = mn(1,:)*Io_x;
+Predictive_Dist_1 = eval(subs(mu_pred_1,{x},{range}));
+error1 = sqrt(eval(subs(var_pred_1,{x},{range})));
+
+var_pred_2 = (1/beta) + (transpose(Io_x)*inv(Sn1{2})*Io_x);     <span class="comment">% 2nd Observation</span>
+mu_pred_2 = mn(2,:)*Io_x;
+Predictive_Dist_2 = eval(subs(mu_pred_2,{x},{range}));
+error2 = sqrt(eval(subs(var_pred_2,{x},{range})));
+
+var_pred_20 = (1/beta) + (transpose(Io_x)*inv(Sn1{obs})*Io_x);  <span class="comment">% 20th Observation</span>
+mu_pred_20 = mn(obs,:)*Io_x;
+Predictive_Dist_20 = eval(subs(mu_pred_20,{x},{range}));
+error20 = sqrt(eval(subs(var_pred_20,{x},{range})));
+
+
+
+
+<span class="comment">% Plot Figure 3.7!</span>
+
+subplot(4,3,2)
+contourf(W00, W11, reshape(Prior,length(range),length(range)));
+xlabel(<span class="string">'\omegao'</span>)
+ylabel(<span class="string">'\omega1'</span>)
+title(<span class="string">'Prior/Posterior'</span>)
+hold <span class="string">on</span>
+scatter(ao,a1,<span class="string">'+'</span>)
+
+subplot(4,3,3)
+plot(range,y1(1,:),<span class="string">'r'</span>,range,y1(2,:),<span class="string">'r'</span>,range,y1(3,:),<span class="string">'r'</span>,range,y1(4,:),<span class="string">'r'</span>,range,y1(5,:),<span class="string">'r'</span>,range,y1(6,:),<span class="string">'r'</span>);
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'y'</span>)
+xlim([-1 1]);
+ylim([-1 1]);
+title(<span class="string">'Data Space'</span>)
+
+
+subplot(4,3,4)
+contourf(W00, W11, Z_Like_1);
+xlabel(<span class="string">'\omegao'</span>)
+ylabel(<span class="string">'\omega1'</span>)
+title(<span class="string">'Likelihood'</span>);
+hold <span class="string">on</span>
+scatter(ao,a1,<span class="string">'+'</span>)
+
+subplot(4,3,5)
+contourf(W00, W11, reshape(Posterior_1,length(range),length(range)));
+xlabel(<span class="string">'\omegao'</span>)
+ylabel(<span class="string">'\omega1'</span>)
+hold <span class="string">on</span>
+scatter(ao,a1,<span class="string">'+'</span>)
+
+subplot(4,3,6)
+plot(range,y2(1,:),<span class="string">'r'</span>,range,y2(2,:),<span class="string">'r'</span>,range,y2(3,:),<span class="string">'r'</span>,range,y2(4,:),<span class="string">'r'</span>,range,y2(5,:),<span class="string">'r'</span>,range,y2(6,:),<span class="string">'r'</span>);
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'y'</span>)
+hold <span class="string">on</span>
+scatter(xn(1),targ(1))
+xlim([-1 1]);
+ylim([-1 1]);
+
+
+subplot(4,3,7)
+contourf(W00, W11, Z_Like_2);
+xlabel(<span class="string">'\omegao'</span>)
+ylabel(<span class="string">'\omega1'</span>)
+hold <span class="string">on</span>
+scatter(ao,a1,<span class="string">'+'</span>)
+
+subplot(4,3,8)
+contourf(W00, W11, reshape(Posterior_2,length(range),length(range)));
+xlabel(<span class="string">'\omegao'</span>)
+ylabel(<span class="string">'\omega1'</span>)
+hold <span class="string">on</span>
+scatter(ao,a1,<span class="string">'+'</span>)
+
+subplot(4,3,9)
+plot(range,y3(1,:),<span class="string">'r'</span>,range,y3(2,:),<span class="string">'r'</span>,range,y3(3,:),<span class="string">'r'</span>,range,y3(4,:),<span class="string">'r'</span>,range,y3(5,:),<span class="string">'r'</span>,range,y3(6,:),<span class="string">'r'</span>);
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'y'</span>)
+xlim([-1 1]);
+ylim([-1 1]);
+hold <span class="string">on</span>
+scatter(xn(1:2),targ(1:2));
+
+
+subplot(4,3,10)
+contourf(W00, W11, Z_Like_20);
+xlabel(<span class="string">'\omegao'</span>)
+ylabel(<span class="string">'\omega1'</span>)
+hold <span class="string">on</span>
+scatter(ao,a1,<span class="string">'+'</span>)
+
+subplot(4,3,11)
+contourf(W00, W11, reshape(Posterior_20,length(range),length(range)));
+xlabel(<span class="string">'\omegao'</span>)
+ylabel(<span class="string">'\omega1'</span>)
+hold <span class="string">on</span>
+scatter(ao,a1,<span class="string">'+'</span>)
+
+subplot(4,3,12)
+plot(range,y4(1,:),<span class="string">'r'</span>,range,y4(2,:),<span class="string">'r'</span>,range,y4(3,:),<span class="string">'r'</span>,range,y4(4,:),<span class="string">'r'</span>,range,y4(5,:),<span class="string">'r'</span>,range,y4(6,:),<span class="string">'r'</span>);
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'y'</span>)
+xlim([-1 1]);
+ylim([-1 1]);
+hold <span class="string">on</span>
+scatter(xn(1:20),targ(1:20));
+
+<span class="comment">% Plot Figure 3.8 (corresponding to this specific linear regression)!</span>
+
+figure
+det_func = ao + a1*range;
+subplot(3,1,1)
+errorbar(range,Predictive_Dist_1,error1,<span class="string">'r'</span>)
+hold <span class="string">on</span>
+plot(range,det_func,<span class="string">'g'</span>)
+xlim([-1 1]);
+ylim([-1.5 1.5]);
+scatter(xn(1),targ(1))
+title(<span class="string">'Predictive Distribution (in Red) After 1st Observation'</span>)
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'t'</span>)
+
+subplot(3,1,2)
+errorbar(range,Predictive_Dist_2,error2,<span class="string">'r'</span>)
+hold <span class="string">on</span>
+plot(range,det_func,<span class="string">'g'</span>)
+xlim([-1 1]);
+ylim([-1.5 1.5]);
+hold <span class="string">on</span>
+scatter(xn(1:2),targ(1:2));
+title(<span class="string">'Predictive Distribution (in Red) After 2nd Observation'</span>)
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'t'</span>)
+
+subplot(3,1,3)
+errorbar(range,Predictive_Dist_20,error20,<span class="string">'r'</span>)
+hold <span class="string">on</span>
+plot(range,det_func,<span class="string">'g'</span>)
+xlim([-1 1]);
+ylim([-1.5 1.5]);
+hold <span class="string">on</span>
+scatter(xn(1:20),targ(1:20));
+title(<span class="string">'Predictive Distribution (in Red) After 20th Observation'</span>)
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'t'</span>)
+</pre><img vspace="5" hspace="5" src="Machine_Learning_Mini_Project_2_01.png" alt=""> <img vspace="5" hspace="5" src="Machine_Learning_Mini_Project_2_02.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% Machine Learning - Mini Project #2
+% By Matthew Smarsch & Frank Longueira
+
+close all;
+clear all;
+clc;
+format shortEng;
+
+% Allocating Memory and Fixing Parameters
+
+obs = 20;                       % Number of observations
+
+ao = -0.3;                      % Weight ao of the linear function
+a1 = 0.5;                       % Weight a1 of the linear function
+alpha = 2;                      % Precision of the weights
+mn_0 = [0 0];                   % Mean of prior on the weights
+Sn_0 = (alpha)*eye(2);          % Covariance matrix of prior on the weights
+mn = zeros(obs,2);              % Allocating memory for mean updating
+Sn1 = cell(obs,1);              % Allocating memory for covariance matrix updating
+Io = zeros(obs,2);              % Allocating memory for basis function matrix      
+
+mu = 0;                         % Mean of noise
+sigma = 0.2;                    % Standard deviation of noise
+var = sigma^2;                  % Variance of the noise
+beta = 1/var;                   % Precision of noise
+
+          
+% Generating data points
+xn = -1 + (2).*rand(obs,1);                   % Generating random input values on the range [-1 1]
+det_func = (ao + a1*xn);                      % Deterministic function we are trying to estimate, evaluated at the points xn
+targ = det_func + normrnd(mu,sigma,obs,1);    % Add noise to deterministic function, these are the target values
+
+
+% Make function for likelihood function per observation
+syms f(x,t,w0,w1)      
+f(x,t,w0,w1) =  ((1/(sigma*sqrt(2*pi)))*exp((-(t-(w0+w1*x))^2)/(2*var)));
+
+Like_n = cell(obs,1);                         % Allocating memory for each likelihood function
+
+
+% Generating and storing new mean vector, covariance matrix, and likelihood function for the weights, per observation
+for i = 1:obs
+    Io(i,:) = [1 xn(i)];
+    Sn1{i} = alpha*eye(2) + beta*Io(1:i,:)'*Io(1:i,:);
+    mn(i,:) = beta*inv(Sn1{i})*Io(1:i,:)'*targ(1:i,1);
+    
+    Like_n{i} = f(xn(i),targ(i),w0,w1); 
+end
+
+% Create meshgrid for the space of the weights, ao and a1 (w0 and w1)
+range = -1:0.1:1;                               % Range space for parameters
+[W00 W11] = meshgrid(range,range);
+
+% Evaluate likelihood function of weight space for observation 1, 2, and 20
+Z_Like_1 = eval(subs(Like_n{1},{w0 w1},{W00, W11}));
+Z_Like_2 = eval(subs(Like_n{2},{w0 w1},{W00, W11}));
+Z_Like_20 = eval(subs(Like_n{obs},{w0 w1},{W00, W11}));
+
+
+% Create prior distribution of the weights and draw values from it
+Prior = mvnpdf([W00(:) W11(:)],mn_0,Sn_0);
+Draw_prior = mvnrnd(mn_0,Sn_0,6);
+y1 = zeros(6,length(range));
+for j = 1:6                                     % Generate 6 possible estimates on the deterministic function using the prior on the weights
+    y1(j,:)= Draw_prior(j,1)+ Draw_prior(j,2)*range;
+end
+
+% Create posterior distribution of the weights, after 1st observation, and draw values from it
+Posterior_1 = mvnpdf([W00(:) W11(:)],mn(1,:),inv(Sn1{1}));
+Draw_Posterior_1 = mvnrnd(mn(1,:),inv(Sn1{1}),6);
+y2 = zeros(6,length(range));                    % Generate 6 possible estimates on the deterministic function using the posterior on the weights
+for j = 1:6
+    y2(j,:)= Draw_Posterior_1(j,1)+ Draw_Posterior_1(j,2)*range;
+end
+
+% Create posterior distribution of the weights, after 2nd observation, and draw values from it
+Posterior_2 = mvnpdf([W00(:) W11(:)],mn(2,:),inv(Sn1{2}));
+Draw_Posterior_2 = mvnrnd(mn(2,:),inv(Sn1{2}),6);
+y3 = zeros(6,length(range));
+for j = 1:6                                     % Generate 6 possible estimates on the deterministic function using the new posterior on the weights
+    y3(j,:)= Draw_Posterior_2(j,1)+ Draw_Posterior_2(j,2)*range;
+end
+
+% Create posterior distribution of the weights, after 20th observation, and draw values from it
+Posterior_20 = mvnpdf([W00(:) W11(:)],mn(20,:),inv(Sn1{20}));
+Draw_Posterior_20 = mvnrnd(mn(20,:),inv(Sn1{20}),6);
+y4 = zeros(6,length(range));                    % Generate 6 possible estimates on the deterministic function using the final posterior on the weights
+for j = 1:6
+    y4(j,:)= Draw_Posterior_20(j,1)+ Draw_Posterior_20(j,2)*range;
+end
+
+% Generating Predictive Distributions for this regression after 1st, 2nd, and 20th observations
+
+syms x
+
+Io_x = transpose([1 x]);                                        % Basis function vector
+
+var_pred_1 = (1/beta) + (transpose(Io_x)*inv(Sn1{1})*Io_x);     % 1st Observation
+mu_pred_1 = mn(1,:)*Io_x;
+Predictive_Dist_1 = eval(subs(mu_pred_1,{x},{range}));
+error1 = sqrt(eval(subs(var_pred_1,{x},{range})));
+
+var_pred_2 = (1/beta) + (transpose(Io_x)*inv(Sn1{2})*Io_x);     % 2nd Observation
+mu_pred_2 = mn(2,:)*Io_x;
+Predictive_Dist_2 = eval(subs(mu_pred_2,{x},{range}));
+error2 = sqrt(eval(subs(var_pred_2,{x},{range})));
+
+var_pred_20 = (1/beta) + (transpose(Io_x)*inv(Sn1{obs})*Io_x);  % 20th Observation
+mu_pred_20 = mn(obs,:)*Io_x;
+Predictive_Dist_20 = eval(subs(mu_pred_20,{x},{range}));
+error20 = sqrt(eval(subs(var_pred_20,{x},{range})));
+
+
+
+
+% Plot Figure 3.7!
+
+subplot(4,3,2)
+contourf(W00, W11, reshape(Prior,length(range),length(range)));
+xlabel('\omegao')
+ylabel('\omega1')
+title('Prior/Posterior')
+hold on
+scatter(ao,a1,'+')
+
+subplot(4,3,3)
+plot(range,y1(1,:),'r',range,y1(2,:),'r',range,y1(3,:),'r',range,y1(4,:),'r',range,y1(5,:),'r',range,y1(6,:),'r');
+xlabel('x')
+ylabel('y')
+xlim([-1 1]);
+ylim([-1 1]);
+title('Data Space')
+
+
+subplot(4,3,4)
+contourf(W00, W11, Z_Like_1);
+xlabel('\omegao')
+ylabel('\omega1')
+title('Likelihood');
+hold on
+scatter(ao,a1,'+')
+
+subplot(4,3,5)
+contourf(W00, W11, reshape(Posterior_1,length(range),length(range)));
+xlabel('\omegao')
+ylabel('\omega1')
+hold on
+scatter(ao,a1,'+')
+
+subplot(4,3,6)
+plot(range,y2(1,:),'r',range,y2(2,:),'r',range,y2(3,:),'r',range,y2(4,:),'r',range,y2(5,:),'r',range,y2(6,:),'r');
+xlabel('x')
+ylabel('y')
+hold on
+scatter(xn(1),targ(1))
+xlim([-1 1]);
+ylim([-1 1]);
+
+
+subplot(4,3,7)
+contourf(W00, W11, Z_Like_2);
+xlabel('\omegao')
+ylabel('\omega1')
+hold on
+scatter(ao,a1,'+')
+
+subplot(4,3,8)
+contourf(W00, W11, reshape(Posterior_2,length(range),length(range)));
+xlabel('\omegao')
+ylabel('\omega1')
+hold on
+scatter(ao,a1,'+')
+
+subplot(4,3,9)
+plot(range,y3(1,:),'r',range,y3(2,:),'r',range,y3(3,:),'r',range,y3(4,:),'r',range,y3(5,:),'r',range,y3(6,:),'r');
+xlabel('x')
+ylabel('y')
+xlim([-1 1]);
+ylim([-1 1]);
+hold on
+scatter(xn(1:2),targ(1:2));
+
+
+subplot(4,3,10)
+contourf(W00, W11, Z_Like_20);
+xlabel('\omegao')
+ylabel('\omega1')
+hold on
+scatter(ao,a1,'+')
+
+subplot(4,3,11)
+contourf(W00, W11, reshape(Posterior_20,length(range),length(range)));
+xlabel('\omegao')
+ylabel('\omega1')
+hold on
+scatter(ao,a1,'+')
+
+subplot(4,3,12)
+plot(range,y4(1,:),'r',range,y4(2,:),'r',range,y4(3,:),'r',range,y4(4,:),'r',range,y4(5,:),'r',range,y4(6,:),'r');
+xlabel('x')
+ylabel('y')
+xlim([-1 1]);
+ylim([-1 1]);
+hold on
+scatter(xn(1:20),targ(1:20));
+
+% Plot Figure 3.8 (corresponding to this specific linear regression)!
+
+figure
+det_func = ao + a1*range;
+subplot(3,1,1)
+errorbar(range,Predictive_Dist_1,error1,'r')
+hold on
+plot(range,det_func,'g')
+xlim([-1 1]);
+ylim([-1.5 1.5]);
+scatter(xn(1),targ(1))
+title('Predictive Distribution (in Red) After 1st Observation')
+xlabel('x')
+ylabel('t')
+
+subplot(3,1,2)
+errorbar(range,Predictive_Dist_2,error2,'r')
+hold on
+plot(range,det_func,'g')
+xlim([-1 1]);
+ylim([-1.5 1.5]);
+hold on
+scatter(xn(1:2),targ(1:2));
+title('Predictive Distribution (in Red) After 2nd Observation')
+xlabel('x')
+ylabel('t')
+
+subplot(3,1,3)
+errorbar(range,Predictive_Dist_20,error20,'r')
+hold on
+plot(range,det_func,'g')
+xlim([-1 1]);
+ylim([-1.5 1.5]);
+hold on
+scatter(xn(1:20),targ(1:20));
+title('Predictive Distribution (in Red) After 20th Observation')
+xlabel('x')
+ylabel('t')
+
+##### SOURCE END #####
+--></body></html>
